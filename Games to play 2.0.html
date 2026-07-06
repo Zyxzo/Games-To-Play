@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OASIS GAME LOG v2.1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Press Start 2P', sans-serif;
+      background: linear-gradient(135deg, #0b1f2e, #1a3a4f, #0b1f2e);
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc;
+      min-height: 100vh;
+      overflow-y: auto; /* This forces the scrollbar */
+    }
+    .scanline {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 204, 0.04) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      animation: scan 4s linear infinite;
+      z-index: 9999;
+    }
+    @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+    .neon { text-shadow: 0 0 20px #00ffcc, 0 0 40px #00d4ff; }
+    .ioi-glow { box-shadow: 0 0 30px #00ffcc, inset 0 0 20px rgba(0, 212, 255, 0.3); }
+    
+    .delete-btn {
+      font-family: 'Press Start 2P', sans-serif;
+      color: #ff3366;
+      text-shadow: 0 0 8px #ff3366;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover {
+      color: #ff6688;
+      text-shadow: 0 0 15px #ff3366;
+      transform: scale(1.3);
+    }
+  </style>
+</head>
+<body class="p-8 relative">
+  <div class="scanline"></div>
+  
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <h1 class="text-6xl neon mb-2 tracking-widest">OASIS</h1>
+      <p class="text-xl text-cyan-300">GAMES TO PLAY</p>
+      <div class="h-1 w-96 mx-auto mt-6 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
+    </div>
+
+    <div class="bg-black/70 border-4 border-cyan-400 p-8 rounded-lg shadow-2xl ioi-glow">
+      <div class="flex justify-between items-center mb-8">
+        <input id="newGame" 
+               class="bg-transparent border-b-2 border-cyan-400 text-white placeholder-cyan-300 focus:outline-none w-full text-lg py-2"
+               placeholder="ENTER NEW GAME TITLE...">
+        <button onclick="addGame()" 
+                class="ml-4 px-8 py-3 bg-cyan-600 hover:bg-cyan-500 transition-all border-2 border-white text-white font-bold shadow-lg">
+          ADD GAME
+        </button>
+      </div>
+
+      <ul id="gameList" class="space-y-4 text-lg"></ul>
+    </div>
+
+    <div class="text-center mt-12 text-xs opacity-70 pb-12">
+      "Some people can read War and Peace and come away thinking it's a simple adventure story..."
+    </div>
+  </div>
+
+  <script>
+    const gameList = document.getElementById('gameList');
+    let games = JSON.parse(localStorage.getItem('oasisGames')) || [];
+
+    function render() {
+      gameList.innerHTML = '';
+      games.forEach((game, index) => {
+        const li = document.createElement('li');
+        li.className = `flex items-center gap-4 p-4 border-2 ${game.done ? 'border-emerald-400 bg-emerald-900/30' : 'border-cyan-400'} rounded`;
+        li.innerHTML = `
+          <input type="checkbox" ${game.done ? 'checked' : ''} 
+                 onchange="toggleDone(${index})" class="w-6 h-6 accent-cyan-500">
+          <span class="flex-1 ${game.done ? 'line-through text-emerald-400' : ''}">${game.title}</span>
+          <button onclick="deleteGame(${index})" 
+                  class="delete-btn text-3xl leading-none hover:scale-125 transition-transform">✕</button>
+        `;
+        gameList.appendChild(li);
+      });
+    }
+
+    function addGame() {
+      const input = document.getElementById('newGame');
+      if (input.value.trim() === '') return;
+      
+      games.push({ title: input.value.trim(), done: false });
+      localStorage.setItem('oasisGames', JSON.stringify(games));
+      input.value = '';
+      render();
+    }
+
+    function toggleDone(index) {
+      games[index].done = !games[index].done;
+      localStorage.setItem('oasisGames', JSON.stringify(games));
+      render();
+    }
+
+    function deleteGame(index) {
+      games.splice(index, 1);
+      localStorage.setItem('oasisGames', JSON.stringify(games));
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
